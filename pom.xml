@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+   <!-- pom.xml файл - основной файл maven, который описывает проект -->
+
+<!-- 1. GAV - обязательная информация -->
+    <groupId>org.example</groupId>
+    <artifactId>maven-example</artifactId>
+    <version>1.0-SNAPSHOT</version> <!--  SNAPSHOT - версия находится в разработке -->
+<!-- <version>1.0</version> код в рамках указанной версии не будет изменяться-->
+
+<!-- 2. Дополнительная информация  -->
+    <name>Maven Example</name>
+    <description>Project Description</description>
+    <url>https://example.org</url>
+
+<!-- 3. Тип файла, который будет доступен в результате сборки  -->
+<!--  jar | war (web) | pom (для родителей в модульной сборке) | ear -->
+    <packaging>jar</packaging>
+
+<!-- 4. Свойства проекта  -->
+    <properties>
+
+        <maven.compiler.source>13</maven.compiler.source>
+        <maven.compiler.target>13</maven.compiler.target>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
+
+<!--  локальные переменные,
+    log4j.version - имя переменной
+    2.14.0 - значение переменной -->
+        <log4j.version>2.14.0</log4j.version>
+    </properties>
+
+<!--  5. Репозитории - хранилище артефактов: jar, war и тд архивы    -->
+<!--  5.1 Локальный (у каждого пользователя) /.m2/repository/  -->
+<!--  5.2 Центральный (глобальный)  -->
+<!--  5.3 Корпоративный репозиторий -->
+<!--    <repositories>
+        <repository>
+            <id>company-id-repository</id>
+            <url>example.com/repository</url>
+        </repository>
+    </repositories>-->
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+            <scope>compile</scope>
+            <!-- scope область видимости зависимостей
+            1. compile (по умолчанию) - зависимость доступна во время компиляции,
+                                    выполнения, тестирования, попадет в сборку
+            2. test доступна только при тестировании
+            3. runtime используется во время выполнения / тестирования
+            (указывать, если нет прямого обращения к классам библиотеки)
+            4. provided аналогично compile, но не попадет в сборку
+            5. <scope>system</scope>
+            <systemPath>путь к библиотеке</systemPath>
+            6. import для модульной сборки
+            -->
+        </dependency>
+    </dependencies>
+
+<!--  плагины используются для:
+   компиляции,
+   сборки проекта,
+   для генерации документации / сайта проекта,
+   тестирования и тд  -->
+
+    <!-- плагины можно привязать к фазам maven -->
+<!--    <build>-->
+<!--        <plugins>-->
+<!--            <plugin>-->
+<!--             GAV -->
+<!--             настройки плагина     -->
+<!--            </plugin>-->
+<!--        </plugins>-->
+<!--    </build>-->
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.3</version>
+                <!--                Привязка к фазам сборки-->
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <!--   задача, которую должен выполнить плагин на указанных фазах сборки-->
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <!--      дополнительные настройки плагина-->
+                <configuration>
+                    <!--                    <artifactSet>-->
+                    <!--                        <excludes>-->
+                    <!--                            <exclude>org.apache.logging.log4j:log4j-api</exclude>-->
+                    <!--                            <exclude>org.apache.logging.log4j:log4j-core</exclude>-->
+                    <!--                        </excludes>-->
+                    <!--                    </artifactSet>-->
+
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*</exclude>
+                                <exclude>META-INF/*</exclude>
+                                <exclude>META-INF/*</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                    <!--     для того, чтобы jar был исполняемым -->
+                    <transformers>
+                        <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <mainClass>Application</mainClass>
+                        </transformer>
+                    </transformers>
+                </configuration>
+            </plugin>
+
+            <plugin>
+
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.2.0</version>
+
+                <!--   дополнительные настройки плагина-->
+
+                <configuration>
+                    <show>private</show>
+                </configuration>
+
+                <!-- Привязка к фазам сборки-->
+
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <!--   задача, которую должен выполнить плагин на указанных фазах сборки-->
+                            <goal>aggregate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.9.0</version>
+                <configuration>
+                    <locales>en,ru</locales>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+
+
+</project>
